@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Air Quality & Dust Monitoring Dashboard</title>
+
+  <!-- Tailwind CSS & ApexCharts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <!-- MQTT.js Library -->
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; }
+  </style>
+</head>
+<body class="p-4 md:p-8">
+
+  <div class="max-w-6xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-center bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700">
+      <div>
+        <h1 class="text-2xl font-bold text-sky-400">Air & Dust Monitoring System</h1>
+        <p class="text-slate-400 text-sm">Real-time Monitoring & ThingSpeak Cloud History</p>
+      </div>
+      <div class="mt-4 md:mt-0 flex items-center space-x-3">
+        <span id="status-badge" class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+          Connecting to MQTT...
+        </span>
+      </div>
+    </div>
+
+    <!-- Cards Real-time Data -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md">
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Suhu Udara</p>
+        <h2 class="text-3xl font-extrabold text-orange-400 mt-2" id="val-temp">-- °C</h2>
+        <p class="text-xs text-slate-500 mt-1">Sensor DHT22</p>
+      </div>
+      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md">
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Kelembapan</p>
+        <h2 class="text-3xl font-extrabold text-blue-400 mt-2" id="val-hum">-- %</h2>
+        <p class="text-xs text-slate-500 mt-1">Sensor DHT22</p>
+      </div>
+      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md">
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Kualitas Gas (MQ-135)</p>
+        <h2 class="text-3xl font-extrabold text-emerald-400 mt-2" id="val-mq">-- ADC</h2>
+        <p class="text-xs text-slate-500 mt-1" id="status-mq">Status: --</p>
+      </div>
+      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md">
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Partikel Debu (PM2.5)</p>
+        <h2 class="text-3xl font-extrabold text-purple-400 mt-2" id="val-pm">-- µg/m³</h2>
+        <p class="text-xs text-slate-500 mt-1" id="status-pm">Status: --</p>
+      </div>
+    </div>
+
+    <!-- Grafik Section -->
+    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+        <h3 class="text-lg font-bold text-slate-200">Grafik Parameter Udara</h3>
+
+        <!-- Tab Mode Switcher -->
+        <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-700">
+          <button id="btn-live" onclick="switchMode('live')" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-sky-500 text-white transition">
+            Live (Real-time)
+          </button>
+          <button id="btn-history" onclick="switchMode('history')" class="px-4 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
+            History (ThingSpeak DB)
+          </button>
+        </div>
+      </div>
+
+      <div id="chart-container" class="w-full"></div>
+    </div>
+  </div>
+
+  <script>
+    // Konfigurasi Connection
+    const brokerHost = 'wss://941be002ec5e47869861c1c75a6fcdc0.s1.eu.hivemq.cloud:8884/mqtt';
+    const topicName  = 'air/quality/data';
+    const username   = 'monitor';
+    const password   = 'monitor123';
+
+    const thingspeakChannelID  = '3570036'; 
+    const thingspeakReadAPIKey = '1YLE5Z0NMS1HV3ZS';
+    const thingspeakApiUrl     = `https://api.thingspeak.com/channels/${thingspeakChannelID}/feeds.json?api_key=${thingspeakReadAPIKey}&results=150`;
+
+    let currentViewMode = 'live';
+    const liveDataStore = { timestamps: [], temp: [], hum: [], mq135: [], pm25: [] };
+
+    const chartOptions = {
+      chart: { type: 'line', height: 350, toolbar: { show: true }, animations: { enabled: true } },
+      stroke: { curve: 'smooth', width: 2 },
+      colors: ['#fb923c', '#60a5fa', '#34d399', '#c084fc'],
+      series: [
+        { name: 'Suhu (°C)', data: [] },
+        { name: 'Kelembapan (%)', data: [] },
+        { name: 'MQ-135 (ADC)', data: [] },
+        { name: 'PM2.5 (µg/m³)', data: [] }
+      ],
+      xaxis: { categories: [], labels: { style: { colors: '#94a3b8' } } },
+      yaxis: { labels: { style: { colors: '#94a3b8' } } },
+      grid: { borderColor: '#334155' },
+      theme: { mode: 'dark' }
+    };
+
+    const chart = new ApexCharts(document.querySelector("#chart-container"), chartOptions);
+    chart.render();
+
+    function switchMode(mode) {
+      currentViewMode = mode;
+      const btnLive = document.getElementById('btn-live');
+      const btnHistory = document.getElementById('btn-history');
+
+      if (mode === 'live') {
+        btnLive.className = "px-4 py-1.5 text-xs font-semibold rounded-lg bg-sky-500 text-white transition";
+        btnHistory.className = "px-4 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition";
+        updateChartLive();
+      } else {
+        btnHistory.className = "px-4 py-1.5 text-xs font-semibold rounded-lg bg-sky-500 text-white transition";
+        btnLive.className = "px-4 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition";
+        loadHistoryData();
+      }
+    }
+
+    function updateChartLive() {
+      chart.updateSeries([
+        { name: 'Suhu (°C)', data: liveDataStore.temp },
+        { name: 'Kelembapan (%)', data: liveDataStore.hum },
+        { name: 'MQ-135 (ADC)', data: liveDataStore.mq135 },
+        { name: 'PM2.5 (µg/m³)', data: liveDataStore.pm25 }
+      ]);
+      chart.updateOptions({ xaxis: { categories: liveDataStore.timestamps } });
+    }
+
+    function loadHistoryData() {
+      fetch(thingspeakApiUrl)
+        .then(res => res.json())
+        .then(data => {
+          const feeds = data.feeds;
+          const times = feeds.map(item => new Date(item.created_at).toLocaleString('id-ID', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }));
+          const temps = feeds.map(item => parseFloat(item.field1));
+          const hums  = feeds.map(item => parseFloat(item.field2));
+          const mqs   = feeds.map(item => parseInt(item.field3));
+          const pms   = feeds.map(item => parseFloat(item.field4));
+
+          chart.updateSeries([
+            { name: 'Suhu (°C)', data: temps },
+            { name: 'Kelembapan (%)', data: hums },
+            { name: 'MQ-135 (ADC)', data: mqs },
+            { name: 'PM2.5 (µg/m³)', data: pms }
+          ]);
+          chart.updateOptions({ xaxis: { categories: times } });
+        })
+        .catch(err => console.error("Gagal menarik data riwayat ThingSpeak:", err));
+    }
+
+    const clientId = 'web_client_' + Math.random().toString(16).substr(2, 8);
+    const client = mqtt.connect(brokerHost, { clientId, username, password, clean: true });
+    const statusBadge = document.getElementById('status-badge');
+
+    client.on('connect', () => {
+      statusBadge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+      statusBadge.innerText = "● Live Connected";
+      client.subscribe(topicName);
+    });
+
+    client.on('offline', () => {
+      statusBadge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-red-500/20 text-red-400 border border-red-500/30";
+      statusBadge.innerText = "Disconnected";
+    });
+
+    client.on('message', (topic, message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        const timeNow = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+        document.getElementById('val-temp').innerText = `${data.temp} °C`;
+        document.getElementById('val-hum').innerText  = `${data.hum} %`;
+        document.getElementById('val-mq').innerText   = `${data.mq135} ADC`;
+        document.getElementById('val-pm').innerText   = `${data.pm25} µg/m³`;
+
+        document.getElementById('status-mq').innerText = `Status: ${data.mq135 < 300 ? 'Bersih' : (data.mq135 < 600 ? 'Sedang' : 'Buruk!')}`;
+        document.getElementById('status-pm').innerText = `Status: ${data.pm25 < 35 ? 'Bersih' : (data.pm25 < 75 ? 'Sedang' : 'Buruk!')}`;
+
+        if (liveDataStore.timestamps.length >= 20) {
+          liveDataStore.timestamps.shift();
+          liveDataStore.temp.shift();
+          liveDataStore.hum.shift();
+          liveDataStore.mq135.shift();
+          liveDataStore.pm25.shift();
+        }
+
+        liveDataStore.timestamps.push(timeNow);
+        liveDataStore.temp.push(data.temp);
+        liveDataStore.hum.push(data.hum);
+        liveDataStore.mq135.push(data.mq135);
+        liveDataStore.pm25.push(data.pm25);
+
+        if (currentViewMode === 'live') {
+          updateChartLive();
+        }
+      } catch (err) {
+        console.error("MQTT JSON Error:", err);
+      }
+    });
+  </script>
+</body>
+</html>
