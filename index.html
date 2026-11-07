@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Air Quality & Dust Monitoring Dashboard</title>
+  <title>Monitoring Kualitas Udara - SDN 65 Pekanbaru</title>
 
   <!-- Tailwind CSS & ApexCharts -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -12,71 +12,161 @@
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
   <style>
-    body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; }
+    body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .animate-pulse-slow { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-8 min-h-screen">
 
   <div class="max-w-6xl mx-auto space-y-6">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row justify-between items-center bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700">
-      <div>
-        <h1 class="text-2xl font-bold text-sky-400">Air & Dust Monitoring System</h1>
-        <p class="text-slate-400 text-sm">Real-time Monitoring & ThingSpeak Cloud History</p>
+    
+    <!-- BANNER WARNING WIFI TERPUTUS (DEFAULT: HIDDEN) -->
+    <div id="wifi-warning-banner" class="hidden bg-rose-600/90 border-2 border-rose-500 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between animate-pulse-slow">
+      <div class="flex items-center space-x-3">
+        <svg class="w-8 h-8 text-rose-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        <div>
+          <h4 class="font-bold text-lg">PERINGATAN: KONEKSI ALAT TERPUTUS!</h4>
+          <p class="text-xs text-rose-100">Alat sensor di SDN 65 Pekanbaru offline/terputus dari jaringan Wi-Fi. Data real-time dihentikan sementara.</p>
+        </div>
       </div>
-      <div class="mt-4 md:mt-0 flex items-center space-x-3">
-        <span id="status-badge" class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-          Connecting to MQTT...
+      <span class="bg-rose-800 text-rose-200 text-xs px-3 py-1 rounded-full font-semibold">Wi-Fi Disconnected</span>
+    </div>
+
+    <!-- HEADER DENGAN LOGO & IDENTITAS SEKOLAH -->
+    <div class="flex flex-col md:flex-row justify-between items-center bg-gradient-to-r from-slate-800 via-sky-950 to-slate-800 p-6 rounded-3xl shadow-2xl border border-sky-500/30">
+      <div class="flex items-center space-x-4">
+        <!-- Mask / Health Icon -->
+        <div class="bg-sky-500/20 p-3 rounded-2xl border border-sky-400/40">
+          <svg class="w-12 h-12 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">
+            SDN 65 PEKANBARU
+          </h1>
+          <p class="text-slate-300 text-sm font-medium">Sistem Monitoring Kualitas Udara & Debu Lingkungan Sekolah</p>
+        </div>
+      </div>
+
+      <!-- MQTT Status Badge -->
+      <div class="mt-4 md:mt-0 flex items-center space-x-2">
+        <span id="status-badge" class="px-4 py-1.5 text-xs font-bold rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 shadow-sm">
+          Menghubungkan ke Sensor...
         </span>
       </div>
     </div>
 
-    <!-- Cards Real-time Data -->
+    <!-- CARDS PARAMETER UDARA (COLORFUL & MODERN) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md">
-        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Suhu Udara</p>
-        <h2 class="text-3xl font-extrabold text-orange-400 mt-2" id="val-temp">-- °C</h2>
-        <p class="text-xs text-slate-500 mt-1">Sensor DHT22</p>
+      
+      <!-- Suhu -->
+      <div class="bg-slate-800/80 backdrop-blur-md p-5 rounded-3xl border border-orange-500/30 shadow-lg hover:border-orange-500/60 transition">
+        <div class="flex justify-between items-center">
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Suhu Udara</p>
+          <span class="text-2xl">🌡️</span>
+        </div>
+        <h2 class="text-4xl font-black text-orange-400 mt-2" id="val-temp">-- °C</h2>
+        <p class="text-xs text-slate-400 mt-2">Sensor DHT22 Presisi</p>
       </div>
-      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md">
-        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Kelembapan</p>
-        <h2 class="text-3xl font-extrabold text-blue-400 mt-2" id="val-hum">-- %</h2>
-        <p class="text-xs text-slate-500 mt-1">Sensor DHT22</p>
+
+      <!-- Kelembapan -->
+      <div class="bg-slate-800/80 backdrop-blur-md p-5 rounded-3xl border border-blue-500/30 shadow-lg hover:border-blue-500/60 transition">
+        <div class="flex justify-between items-center">
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Kelembapan</p>
+          <span class="text-2xl">💧</span>
+        </div>
+        <h2 class="text-4xl font-black text-blue-400 mt-2" id="val-hum">-- %</h2>
+        <p class="text-xs text-slate-400 mt-2">Kelembapan Relatif Udara</p>
       </div>
-      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md">
-        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Kualitas Gas (MQ-135)</p>
-        <h2 class="text-3xl font-extrabold text-emerald-400 mt-2" id="val-mq">-- ADC</h2>
-        <p class="text-xs text-slate-500 mt-1" id="status-mq">Status: --</p>
+
+      <!-- MQ-135 Gas -->
+      <div class="bg-slate-800/80 backdrop-blur-md p-5 rounded-3xl border border-emerald-500/30 shadow-lg hover:border-emerald-500/60 transition">
+        <div class="flex justify-between items-center">
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Gas & Asap (MQ-135)</p>
+          <span class="text-2xl">🌫️</span>
+        </div>
+        <h2 class="text-4xl font-black text-emerald-400 mt-2" id="val-mq">-- ADC</h2>
+        <div class="mt-2 flex items-center space-x-2">
+          <span id="badge-mq" class="px-2.5 py-0.5 text-xs font-black rounded-lg bg-slate-700 text-slate-300">--</span>
+        </div>
       </div>
-      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md">
-        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Partikel Debu (PM2.5)</p>
-        <h2 class="text-3xl font-extrabold text-purple-400 mt-2" id="val-pm">-- µg/m³</h2>
-        <p class="text-xs text-slate-500 mt-1" id="status-pm">Status: --</p>
+
+      <!-- PM2.5 Debu -->
+      <div class="bg-slate-800/80 backdrop-blur-md p-5 rounded-3xl border border-purple-500/30 shadow-lg hover:border-purple-500/60 transition">
+        <div class="flex justify-between items-center">
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Partikel Debu (PM2.5)</p>
+          <span class="text-2xl">😷</span>
+        </div>
+        <h2 class="text-4xl font-black text-purple-400 mt-2" id="val-pm">-- µg/m³</h2>
+        <div class="mt-2 flex items-center space-x-2">
+          <span id="badge-pm" class="px-2.5 py-0.5 text-xs font-black rounded-lg bg-slate-700 text-slate-300">--</span>
+        </div>
       </div>
     </div>
 
-    <!-- Grafik Section -->
-    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
-        <h3 class="text-lg font-bold text-slate-200">Grafik Parameter Udara</h3>
+    <!-- SUMMARY STATUS KESEHATAN LINGKUNGAN SEKOLAH -->
+    <div id="overall-status-card" class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 transition-all duration-500">
+      <div class="flex items-center space-x-4">
+        <div id="status-icon-bg" class="p-4 rounded-2xl bg-emerald-500/20 text-emerald-400 text-3xl">
+          😊
+        </div>
+        <div>
+          <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Status Kesehatan Udara Sekolah</p>
+          <h3 id="overall-status-text" class="text-2xl font-black text-emerald-400">MEMUAT DATA...</h3>
+          <p id="overall-status-desc" class="text-xs text-slate-300 mt-0.5">Menunggu respon data dari sensor sekolah SDN 65 Pekanbaru.</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2 text-xs font-bold text-slate-400">
+        <span class="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">● Hijau: Baik</span>
+        <span class="px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30">● Kuning: Sedang</span>
+        <span class="px-3 py-1.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/30">● Merah: Bahaya</span>
+      </div>
+    </div>
 
-        <!-- Tab Mode Switcher -->
-        <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-700">
-          <button id="btn-live" onclick="switchMode('live')" class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-sky-500 text-white transition">
+    <!-- GRAFIK & FILTER SECTION -->
+    <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
+        <div>
+          <h3 class="text-lg font-bold text-slate-200">Grafik Parameter Udara SDN 65</h3>
+          <p class="text-xs text-slate-400" id="chart-sub-title">Menampilkan Mode Live Real-time</p>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="flex flex-wrap items-center gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-700">
+          <button id="btn-live" onclick="switchMode('live')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-sky-500 text-white shadow-md transition">
             Live (Real-time)
           </button>
-          <button id="btn-history" onclick="switchMode('history')" class="px-4 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">
-            History (ThingSpeak DB)
+          <button id="btn-history" onclick="switchMode('history')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition">
+            7 Hari Terakhir
           </button>
+          
+          <!-- Dropdown Filter Hari -->
+          <select id="day-selector" onchange="filterByDay(this.value)" class="bg-slate-800 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-600 focus:outline-none focus:border-sky-500">
+            <option value="" disabled selected>-- Filter Per-Jam Hari --</option>
+            <option value="1">Senin</option>
+            <option value="2">Selasa</option>
+            <option value="3">Rabu</option>
+            <option value="4">Kamis</option>
+            <option value="5">Jumat</option>
+            <option value="6">Sabtu</option>
+            <option value="0">Minggu</option>
+          </select>
         </div>
       </div>
 
       <div id="chart-container" class="w-full"></div>
     </div>
+
   </div>
 
   <script>
-    // Konfigurasi Connection
+    // ------------------------------------------------------------------
+    // KONFIGURASI CONNECTIONS
+    // ------------------------------------------------------------------
     const brokerHost = 'wss://941be002ec5e47869861c1c75a6fcdc0.s1.eu.hivemq.cloud:8884/mqtt';
     const topicName  = 'air/quality/data';
     const username   = 'monitor';
@@ -84,15 +174,17 @@
 
     const thingspeakChannelID  = '3570036'; 
     const thingspeakReadAPIKey = '1YLE5Z0NMS1HV3ZS';
-    const thingspeakApiUrl     = `https://api.thingspeak.com/channels/${thingspeakChannelID}/feeds.json?api_key=${thingspeakReadAPIKey}&results=150`;
+    const thingspeakApiUrl     = `https://api.thingspeak.com/channels/${thingspeakChannelID}/feeds.json?api_key=${thingspeakReadAPIKey}&results=800`;
 
     let currentViewMode = 'live';
+    let cachedFeeds = [];
     const liveDataStore = { timestamps: [], temp: [], hum: [], mq135: [], pm25: [] };
 
+    // Inisialisasi Chart ApexCharts
     const chartOptions = {
       chart: { type: 'line', height: 350, toolbar: { show: true }, animations: { enabled: true } },
-      stroke: { curve: 'smooth', width: 2 },
-      colors: ['#fb923c', '#60a5fa', '#34d399', '#c084fc'],
+      stroke: { curve: 'smooth', width: 3 },
+      colors: ['#fb923c', '#60a5fa', '#10b981', '#a855f7'],
       series: [
         { name: 'Suhu (°C)', data: [] },
         { name: 'Kelembapan (%)', data: [] },
@@ -108,20 +200,88 @@
     const chart = new ApexCharts(document.querySelector("#chart-container"), chartOptions);
     chart.render();
 
-    function switchMode(mode) {
-      currentViewMode = mode;
+    // Fungsi Update Status Kualitas Udara Warna (Hijau, Kuning, Merah)
+    function updateQualityIndicators(mq, pm) {
+      const badgeMq = document.getElementById('badge-mq');
+      const badgePm = document.getElementById('badge-pm');
+      const overallCard = document.getElementById('overall-status-card');
+      const overallText = document.getElementById('overall-status-text');
+      const overallDesc = document.getElementById('overall-status-desc');
+      const overallIcon = document.getElementById('status-icon-bg');
+
+      // Evaluasi MQ-135
+      if (mq < 300) {
+        badgeMq.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        badgeMq.innerText = "BAIK";
+      } else if (mq < 600) {
+        badgeMq.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30";
+        badgeMq.innerText = "SEDANG";
+      } else {
+        badgeMq.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30";
+        badgeMq.innerText = "BAHAYA";
+      }
+
+      // Evaluasi PM2.5
+      if (pm < 35) {
+        badgePm.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        badgePm.innerText = "BAIK";
+      } else if (pm < 75) {
+        badgePm.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30";
+        badgePm.innerText = "SEDANG";
+      } else {
+        badgePm.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30";
+        badgePm.innerText = "BAHAYA";
+      }
+
+      // Evaluasi Total Keseluruhan
+      if (mq < 300 && pm < 35) {
+        overallCard.className = "bg-emerald-950/30 p-6 rounded-3xl border border-emerald-500/50 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 transition-all";
+        overallText.className = "text-2xl font-black text-emerald-400";
+        overallText.innerText = "UDARA SEHAT & BERSIH";
+        overallDesc.innerText = "Sangat aman untuk aktivitas belajar mengajar dan olahraga luar ruangan di SDN 65 Pekanbaru.";
+        overallIcon.className = "p-4 rounded-2xl bg-emerald-500/20 text-emerald-400 text-3xl";
+        overallIcon.innerText = "😊";
+      } else if (mq < 600 || pm < 75) {
+        overallCard.className = "bg-amber-950/30 p-6 rounded-3xl border border-amber-500/50 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 transition-all";
+        overallText.className = "text-2xl font-black text-amber-400";
+        overallText.innerText = "KUALITAS UDARA SEDANG";
+        overallDesc.innerText = "Udara cukup baik, siswa yang sensitif disarankan membatasi aktivitas fisik terlalu lama di luar kelas.";
+        overallIcon.className = "p-4 rounded-2xl bg-amber-500/20 text-amber-400 text-3xl";
+        overallIcon.innerText = "😐";
+      } else {
+        overallCard.className = "bg-rose-950/40 p-6 rounded-3xl border border-rose-500/60 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 transition-all animate-pulse-slow";
+        overallText.className = "text-2xl font-black text-rose-400";
+        overallText.innerText = "PERINGATAN: UDARA BAHAYA!";
+        overallDesc.innerText = "Kadar gas/debu tinggi! WAJIB MENGGUNAKAN MASKER 😷 dan kurangi kegiatan di luar ruangan sekolah!";
+        overallIcon.className = "p-4 rounded-2xl bg-rose-500/20 text-rose-400 text-3xl";
+        overallIcon.innerText = "😷";
+      }
+    }
+
+    function updateButtonStyles(mode) {
       const btnLive = document.getElementById('btn-live');
       const btnHistory = document.getElementById('btn-history');
+      const daySelector = document.getElementById('day-selector');
 
+      btnLive.className = "px-3.5 py-1.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition";
+      btnHistory.className = "px-3.5 py-1.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition";
+      
       if (mode === 'live') {
-        btnLive.className = "px-4 py-1.5 text-xs font-semibold rounded-lg bg-sky-500 text-white transition";
-        btnHistory.className = "px-4 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition";
-        updateChartLive();
-      } else {
-        btnHistory.className = "px-4 py-1.5 text-xs font-semibold rounded-lg bg-sky-500 text-white transition";
-        btnLive.className = "px-4 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition";
-        loadHistoryData();
+        btnLive.className = "px-3.5 py-1.5 text-xs font-bold rounded-xl bg-sky-500 text-white shadow-md transition";
+        daySelector.value = "";
+        document.getElementById('chart-sub-title').innerText = "Menampilkan Mode Live Real-time";
+      } else if (mode === 'history') {
+        btnHistory.className = "px-3.5 py-1.5 text-xs font-bold rounded-xl bg-sky-500 text-white shadow-md transition";
+        daySelector.value = "";
+        document.getElementById('chart-sub-title').innerText = "Menampilkan Riwayat 7 Hari Terakhir";
       }
+    }
+
+    function switchMode(mode) {
+      currentViewMode = mode;
+      updateButtonStyles(mode);
+      if (mode === 'live') updateChartLive();
+      else loadHistoryData();
     }
 
     function updateChartLive() {
@@ -134,41 +294,95 @@
       chart.updateOptions({ xaxis: { categories: liveDataStore.timestamps } });
     }
 
-    function loadHistoryData() {
+    function loadHistoryData(callback) {
       fetch(thingspeakApiUrl)
         .then(res => res.json())
         .then(data => {
-          const feeds = data.feeds;
-          const times = feeds.map(item => new Date(item.created_at).toLocaleString('id-ID', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }));
-          const temps = feeds.map(item => parseFloat(item.field1));
-          const hums  = feeds.map(item => parseFloat(item.field2));
-          const mqs   = feeds.map(item => parseInt(item.field3));
-          const pms   = feeds.map(item => parseFloat(item.field4));
+          cachedFeeds = data.feeds;
+          if (callback) callback();
+          else {
+            const times = cachedFeeds.map(item => new Date(item.created_at).toLocaleString('id-ID', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }));
+            const temps = cachedFeeds.map(item => parseFloat(item.field1));
+            const hums  = cachedFeeds.map(item => parseFloat(item.field2));
+            const mqs   = cachedFeeds.map(item => parseInt(item.field3));
+            const pms   = cachedFeeds.map(item => parseFloat(item.field4));
 
-          chart.updateSeries([
-            { name: 'Suhu (°C)', data: temps },
-            { name: 'Kelembapan (%)', data: hums },
-            { name: 'MQ-135 (ADC)', data: mqs },
-            { name: 'PM2.5 (µg/m³)', data: pms }
-          ]);
-          chart.updateOptions({ xaxis: { categories: times } });
+            chart.updateSeries([
+              { name: 'Suhu (°C)', data: temps },
+              { name: 'Kelembapan (%)', data: hums },
+              { name: 'MQ-135 (ADC)', data: mqs },
+              { name: 'PM2.5 (µg/m³)', data: pms }
+            ]);
+            chart.updateOptions({ xaxis: { categories: times } });
+          }
         })
-        .catch(err => console.error("Gagal menarik data riwayat ThingSpeak:", err));
+        .catch(err => console.error("Gagal menarik data ThingSpeak:", err));
     }
 
-    const clientId = 'web_client_' + Math.random().toString(16).substr(2, 8);
-    const client = mqtt.connect(brokerHost, { clientId, username, password, clean: true });
+    function filterByDay(dayNum) {
+      currentViewMode = 'dayFilter';
+      updateButtonStyles('dayFilter');
+      const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      document.getElementById('chart-sub-title').innerText = `Rata-rata Kualitas Udara Hari ${dayNames[dayNum]} (Per-Jam)`;
+
+      const processFilter = () => {
+        const targetDayFeeds = cachedFeeds.filter(item => new Date(item.created_at).getDay() === parseInt(dayNum));
+        const hourlyBuckets = Array.from({ length: 24 }, () => ({ temp: [], hum: [], mq135: [], pm25: [] }));
+
+        targetDayFeeds.forEach(item => {
+          const hour = new Date(item.created_at).getHours();
+          if (item.field1) hourlyBuckets[hour].temp.push(parseFloat(item.field1));
+          if (item.field2) hourlyBuckets[hour].hum.push(parseFloat(item.field2));
+          if (item.field3) hourlyBuckets[hour].mq135.push(parseInt(item.field3));
+          if (item.field4) hourlyBuckets[hour].pm25.push(parseFloat(item.field4));
+        });
+
+        const hoursLabel = [], avgTemp = [], avgHum = [], avgMq = [], avgPm = [];
+        const calcAvg = arr => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : null;
+
+        for (let h = 0; h < 24; h++) {
+          hoursLabel.push(`${String(h).padStart(2, '0')}:00`);
+          avgTemp.push(calcAvg(hourlyBuckets[h].temp));
+          avgHum.push(calcAvg(hourlyBuckets[h].hum));
+          avgMq.push(calcAvg(hourlyBuckets[h].mq135));
+          avgPm.push(calcAvg(hourlyBuckets[h].pm25));
+        }
+
+        chart.updateSeries([
+          { name: 'Suhu (°C)', data: avgTemp },
+          { name: 'Kelembapan (%)', data: avgHum },
+          { name: 'MQ-135 (ADC)', data: avgMq },
+          { name: 'PM2.5 (µg/m³)', data: avgPm }
+        ]);
+        chart.updateOptions({ xaxis: { categories: hoursLabel } });
+      };
+
+      if (cachedFeeds.length === 0) loadHistoryData(processFilter);
+      else processFilter();
+    }
+
+    // MQTT Client Listener & Auto WiFi Warning Detector
+    const clientId = 'web_sdn65_' + Math.random().toString(16).substr(2, 8);
+    const client = mqtt.connect(brokerHost, { clientId, username, password, clean: true, reconnectPeriod: 3000 });
+    
     const statusBadge = document.getElementById('status-badge');
+    const wifiWarningBanner = document.getElementById('wifi-warning-banner');
 
     client.on('connect', () => {
-      statusBadge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-      statusBadge.innerText = "● Live Connected";
+      statusBadge.className = "px-4 py-1.5 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm";
+      statusBadge.innerText = "● Sensor Online";
+      wifiWarningBanner.classList.add('hidden');
       client.subscribe(topicName);
     });
 
     client.on('offline', () => {
-      statusBadge.className = "px-3 py-1 text-xs font-semibold rounded-full bg-red-500/20 text-red-400 border border-red-500/30";
-      statusBadge.innerText = "Disconnected";
+      statusBadge.className = "px-4 py-1.5 text-xs font-bold rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-sm";
+      statusBadge.innerText = "● Sensor Disconnected";
+      wifiWarningBanner.classList.remove('hidden');
+    });
+
+    client.on('error', () => {
+      wifiWarningBanner.classList.remove('hidden');
     });
 
     client.on('message', (topic, message) => {
@@ -181,8 +395,8 @@
         document.getElementById('val-mq').innerText   = `${data.mq135} ADC`;
         document.getElementById('val-pm').innerText   = `${data.pm25} µg/m³`;
 
-        document.getElementById('status-mq').innerText = `Status: ${data.mq135 < 300 ? 'Bersih' : (data.mq135 < 600 ? 'Sedang' : 'Buruk!')}`;
-        document.getElementById('status-pm').innerText = `Status: ${data.pm25 < 35 ? 'Bersih' : (data.pm25 < 75 ? 'Sedang' : 'Buruk!')}`;
+        // Update Indikator Warna Kualitas Udara (Hijau, Kuning, Merah)
+        updateQualityIndicators(data.mq135, data.pm25);
 
         if (liveDataStore.timestamps.length >= 20) {
           liveDataStore.timestamps.shift();
@@ -198,9 +412,7 @@
         liveDataStore.mq135.push(data.mq135);
         liveDataStore.pm25.push(data.pm25);
 
-        if (currentViewMode === 'live') {
-          updateChartLive();
-        }
+        if (currentViewMode === 'live') updateChartLive();
       } catch (err) {
         console.error("MQTT JSON Error:", err);
       }
