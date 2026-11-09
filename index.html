@@ -19,9 +19,9 @@
 </head>
 <body class="p-4 md:p-8 min-h-screen">
 
-  <div class="max-w-6xl mx-auto space-y-6">
+  <div class="max-w-7xl mx-auto space-y-6">
     
-    <!-- BANNER WARNING WIFI TERPUTUS (DEFAULT: HIDDEN) -->
+    <!-- BANNER WARNING WIFI TERPUTUS -->
     <div id="wifi-warning-banner" class="hidden bg-rose-600/90 border-2 border-rose-500 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between animate-pulse-slow">
       <div class="flex items-center space-x-3">
         <svg class="w-8 h-8 text-rose-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,10 +35,9 @@
       <span class="bg-rose-800 text-rose-200 text-xs px-3 py-1 rounded-full font-semibold">Wi-Fi Disconnected</span>
     </div>
 
-    <!-- HEADER DENGAN LOGO & IDENTITAS SEKOLAH -->
+    <!-- HEADER IDENTITAS SEKOLAH -->
     <div class="flex flex-col md:flex-row justify-between items-center bg-gradient-to-r from-slate-800 via-sky-950 to-slate-800 p-6 rounded-3xl shadow-2xl border border-sky-500/30">
       <div class="flex items-center space-x-4">
-        <!-- Mask / Health Icon -->
         <div class="bg-sky-500/20 p-3 rounded-2xl border border-sky-400/40">
           <svg class="w-12 h-12 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -52,7 +51,6 @@
         </div>
       </div>
 
-      <!-- MQTT Status Badge -->
       <div class="mt-4 md:mt-0 flex items-center space-x-2">
         <span id="status-badge" class="px-4 py-1.5 text-xs font-bold rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 shadow-sm">
           Menghubungkan ke Sensor...
@@ -60,9 +58,21 @@
       </div>
     </div>
 
-    <!-- CARDS PARAMETER UDARA (COLORFUL & MODERN) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- CARDS PARAMETER UDARA (5 CARDS: AQI + SENSORS) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       
+      <!-- AQI Index Card -->
+      <div class="bg-slate-800/80 backdrop-blur-md p-5 rounded-3xl border border-yellow-500/40 shadow-lg hover:border-yellow-500/70 transition">
+        <div class="flex justify-between items-center">
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Indeks AQI</p>
+          <span class="text-2xl">🍃</span>
+        </div>
+        <h2 class="text-4xl font-black text-yellow-400 mt-2" id="val-aqi">--</h2>
+        <div class="mt-2 flex items-center space-x-2">
+          <span id="badge-aqi" class="px-2.5 py-0.5 text-xs font-black rounded-lg bg-slate-700 text-slate-300">--</span>
+        </div>
+      </div>
+
       <!-- Suhu -->
       <div class="bg-slate-800/80 backdrop-blur-md p-5 rounded-3xl border border-orange-500/30 shadow-lg hover:border-orange-500/60 transition">
         <div class="flex justify-between items-center">
@@ -80,13 +90,13 @@
           <span class="text-2xl">💧</span>
         </div>
         <h2 class="text-4xl font-black text-blue-400 mt-2" id="val-hum">-- %</h2>
-        <p class="text-xs text-slate-400 mt-2">Kelembapan Relatif Udara</p>
+        <p class="text-xs text-slate-400 mt-2">Kelembapan Relatif</p>
       </div>
 
       <!-- MQ-135 Gas -->
       <div class="bg-slate-800/80 backdrop-blur-md p-5 rounded-3xl border border-emerald-500/30 shadow-lg hover:border-emerald-500/60 transition">
         <div class="flex justify-between items-center">
-          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Gas & Asap (MQ-135)</p>
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Gas (MQ-135)</p>
           <span class="text-2xl">🌫️</span>
         </div>
         <h2 class="text-4xl font-black text-emerald-400 mt-2" id="val-mq">-- ADC</h2>
@@ -98,7 +108,7 @@
       <!-- PM2.5 Debu -->
       <div class="bg-slate-800/80 backdrop-blur-md p-5 rounded-3xl border border-purple-500/30 shadow-lg hover:border-purple-500/60 transition">
         <div class="flex justify-between items-center">
-          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Partikel Debu (PM2.5)</p>
+          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Debu (PM2.5)</p>
           <span class="text-2xl">😷</span>
         </div>
         <h2 class="text-4xl font-black text-purple-400 mt-2" id="val-pm">-- µg/m³</h2>
@@ -106,6 +116,7 @@
           <span id="badge-pm" class="px-2.5 py-0.5 text-xs font-black rounded-lg bg-slate-700 text-slate-300">--</span>
         </div>
       </div>
+
     </div>
 
     <!-- SUMMARY STATUS KESEHATAN LINGKUNGAN SEKOLAH -->
@@ -127,38 +138,63 @@
       </div>
     </div>
 
-    <!-- GRAFIK & FILTER SECTION -->
-    <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
-        <div>
-          <h3 class="text-lg font-bold text-slate-200">Grafik Parameter Udara SDN 65</h3>
-          <p class="text-xs text-slate-400" id="chart-sub-title">Menampilkan Mode Live Real-time</p>
-        </div>
-
-        <!-- Filter Controls -->
-        <div class="flex flex-wrap items-center gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-700">
-          <button id="btn-live" onclick="switchMode('live')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-sky-500 text-white shadow-md transition">
-            Live (Real-time)
-          </button>
-          <button id="btn-history" onclick="switchMode('history')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition">
-            7 Hari Terakhir
-          </button>
-          
-          <!-- Dropdown Filter Hari -->
-          <select id="day-selector" onchange="filterByDay(this.value)" class="bg-slate-800 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-600 focus:outline-none focus:border-sky-500">
-            <option value="" disabled selected>-- Filter Per-Jam Hari --</option>
-            <option value="1">Senin</option>
-            <option value="2">Selasa</option>
-            <option value="3">Rabu</option>
-            <option value="4">Kamis</option>
-            <option value="5">Jumat</option>
-            <option value="6">Sabtu</option>
-            <option value="0">Minggu</option>
-          </select>
-        </div>
+    <!-- MAIN KONTROL FILTER & JUDUL SECTION -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl gap-4">
+      <div>
+        <h3 class="text-lg font-bold text-slate-200">Grafik Parameter Terpisah</h3>
+        <p class="text-xs text-slate-400" id="chart-sub-title">Menampilkan Mode Live Real-time</p>
       </div>
 
-      <div id="chart-container" class="w-full"></div>
+      <!-- Filter Controls -->
+      <div class="flex flex-wrap items-center gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-700">
+        <button id="btn-live" onclick="switchMode('live')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-sky-500 text-white shadow-md transition">
+          Live (Real-time)
+        </button>
+        <button id="btn-history" onclick="switchMode('history')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition">
+          7 Hari Terakhir
+        </button>
+        
+        <!-- Dropdown Filter Hari -->
+        <select id="day-selector" onchange="filterByDay(this.value)" class="bg-slate-800 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-600 focus:outline-none focus:border-sky-500">
+          <option value="" disabled selected>-- Filter Per-Jam Hari --</option>
+          <option value="1">Senin</option>
+          <option value="2">Selasa</option>
+          <option value="3">Rabu</option>
+          <option value="4">Kamis</option>
+          <option value="5">Jumat</option>
+          <option value="6">Sabtu</option>
+          <option value="0">Minggu</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- GRID 4 GRAFIK TERPISAH -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
+      <!-- Grafik 1: Suhu -->
+      <div class="bg-slate-800 p-5 rounded-3xl border border-orange-500/30 shadow-xl">
+        <h4 class="text-sm font-bold text-orange-400 mb-2">Grafik Suhu Udara (°C)</h4>
+        <div id="chart-temp" class="w-full"></div>
+      </div>
+
+      <!-- Grafik 2: Kelembapan -->
+      <div class="bg-slate-800 p-5 rounded-3xl border border-blue-500/30 shadow-xl">
+        <h4 class="text-sm font-bold text-blue-400 mb-2">Grafik Kelembapan Udara (%)</h4>
+        <div id="chart-hum" class="w-full"></div>
+      </div>
+
+      <!-- Grafik 3: MQ-135 Gas -->
+      <div class="bg-slate-800 p-5 rounded-3xl border border-emerald-500/30 shadow-xl">
+        <h4 class="text-sm font-bold text-emerald-400 mb-2">Grafik Kepekatan Gas MQ-135 (ADC)</h4>
+        <div id="chart-mq" class="w-full"></div>
+      </div>
+
+      <!-- Grafik 4: PM2.5 & AQI -->
+      <div class="bg-slate-800 p-5 rounded-3xl border border-purple-500/30 shadow-xl">
+        <h4 class="text-sm font-bold text-purple-400 mb-2">Grafik Debu PM2.5 (µg/m³) & AQI</h4>
+        <div id="chart-pm" class="w-full"></div>
+      </div>
+
     </div>
 
   </div>
@@ -168,7 +204,7 @@
     // KONFIGURASI CONNECTIONS
     // ------------------------------------------------------------------
     const brokerHost = 'wss://941be002ec5e47869861c1c75a6fcdc0.s1.eu.hivemq.cloud:8884/mqtt';
-    const topicName  = 'air/quality/data';
+    const topicName   = 'air/quality/data';
     const username   = 'monitor';
     const password   = 'monitor123';
 
@@ -178,42 +214,72 @@
 
     let currentViewMode = 'live';
     let cachedFeeds = [];
-    const liveDataStore = { timestamps: [], temp: [], hum: [], mq135: [], pm25: [] };
+    const liveDataStore = { timestamps: [], temp: [], hum: [], mq135: [], pm25: [], aqi: [] };
 
-    // Inisialisasi Chart ApexCharts
-    const chartOptions = {
-      chart: { type: 'line', height: 350, toolbar: { show: true }, animations: { enabled: true } },
+    // Template umum opsi grafik ApexCharts
+    function createChartOption(color, name, yTitle) {
+      return {
+        chart: { type: 'line', height: 260, toolbar: { show: false }, animations: { enabled: true } },
+        stroke: { curve: 'smooth', width: 3 },
+        colors: [color],
+        series: [{ name: name, data: [] }],
+        xaxis: { categories: [], labels: { style: { colors: '#94a3b8', fontSize: '10px' } } },
+        yaxis: { title: { text: yTitle, style: { color: '#94a3b8' } }, labels: { style: { colors: '#94a3b8' } } },
+        grid: { borderColor: '#334155' },
+        theme: { mode: 'dark' }
+      };
+    }
+
+    // Inisialisasi 4 Chart Terpisah
+    const chartTemp = new ApexCharts(document.querySelector("#chart-temp"), createChartOption('#fb923c', 'Suhu (°C)', '°C'));
+    const chartHum  = new ApexCharts(document.querySelector("#chart-hum"),  createChartOption('#60a5fa', 'Kelembapan (%)', '%'));
+    const chartMq   = new ApexCharts(document.querySelector("#chart-mq"),   createChartOption('#10b981', 'MQ-135 (ADC)', 'ADC'));
+    
+    // Opsi khusus chart PM2.5 & AQI (Multi-series)
+    const optPm = {
+      chart: { type: 'line', height: 260, toolbar: { show: false }, animations: { enabled: true } },
       stroke: { curve: 'smooth', width: 3 },
-      colors: ['#fb923c', '#60a5fa', '#10b981', '#a855f7'],
+      colors: ['#a855f7', '#facc15'],
       series: [
-        { name: 'Suhu (°C)', data: [] },
-        { name: 'Kelembapan (%)', data: [] },
-        { name: 'MQ-135 (ADC)', data: [] },
-        { name: 'PM2.5 (µg/m³)', data: [] }
+        { name: 'PM2.5 (µg/m³)', data: [] },
+        { name: 'AQI Index', data: [] }
       ],
-      xaxis: { categories: [], labels: { style: { colors: '#94a3b8' } } },
+      xaxis: { categories: [], labels: { style: { colors: '#94a3b8', fontSize: '10px' } } },
       yaxis: { labels: { style: { colors: '#94a3b8' } } },
       grid: { borderColor: '#334155' },
       theme: { mode: 'dark' }
     };
+    const chartPm = new ApexCharts(document.querySelector("#chart-pm"), optPm);
 
-    const chart = new ApexCharts(document.querySelector("#chart-container"), chartOptions);
-    chart.render();
+    chartTemp.render();
+    chartHum.render();
+    chartMq.render();
+    chartPm.render();
 
-    // Fungsi Update Status Kualitas Udara Warna (Hijau, Kuning, Merah)
-    function updateQualityIndicators(mq, pm) {
-      const badgeMq = document.getElementById('badge-mq');
-      const badgePm = document.getElementById('badge-pm');
+    // Fungsi Hitung AQI client-side fallback
+    function calcAQI(pm25) {
+      if (pm25 <= 12.0) return Math.round((50 / 12.0) * pm25);
+      if (pm25 <= 35.4) return Math.round(((100 - 51) / (35.4 - 12.1)) * (pm25 - 12.1) + 51);
+      if (pm25 <= 55.4) return Math.round(((150 - 101) / (55.4 - 35.5)) * (pm25 - 35.5) + 101);
+      if (pm25 <= 150.4) return Math.round(((200 - 151) / (150.4 - 55.5)) * (pm25 - 55.5) + 151);
+      return 201;
+    }
+
+    // Update Status Indikator Kesehatan
+    function updateQualityIndicators(mq, pm, aqi) {
+      const badgeMq  = document.getElementById('badge-mq');
+      const badgePm  = document.getElementById('badge-pm');
+      const badgeAqi = document.getElementById('badge-aqi');
       const overallCard = document.getElementById('overall-status-card');
       const overallText = document.getElementById('overall-status-text');
       const overallDesc = document.getElementById('overall-status-desc');
       const overallIcon = document.getElementById('status-icon-bg');
 
-      // Evaluasi MQ-135
-      if (mq < 300) {
+      // MQ-135 Badge
+      if (mq < 1200) {
         badgeMq.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
         badgeMq.innerText = "BAIK";
-      } else if (mq < 600) {
+      } else if (mq < 2500) {
         badgeMq.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30";
         badgeMq.innerText = "SEDANG";
       } else {
@@ -221,7 +287,7 @@
         badgeMq.innerText = "BAHAYA";
       }
 
-      // Evaluasi PM2.5
+      // PM2.5 Badge
       if (pm < 35) {
         badgePm.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
         badgePm.innerText = "BAIK";
@@ -233,26 +299,38 @@
         badgePm.innerText = "BAHAYA";
       }
 
-      // Evaluasi Total Keseluruhan
-      if (mq < 300 && pm < 35) {
+      // AQI Badge
+      if (aqi <= 50) {
+        badgeAqi.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        badgeAqi.innerText = "BAIK";
+      } else if (aqi <= 100) {
+        badgeAqi.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30";
+        badgeAqi.innerText = "SEDANG";
+      } else {
+        badgeAqi.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30";
+        badgeAqi.innerText = "UNHEALTHY";
+      }
+
+      // Total Status
+      if (mq < 1200 && pm < 35) {
         overallCard.className = "bg-emerald-950/30 p-6 rounded-3xl border border-emerald-500/50 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 transition-all";
         overallText.className = "text-2xl font-black text-emerald-400";
         overallText.innerText = "UDARA SEHAT & BERSIH";
         overallDesc.innerText = "Sangat aman untuk aktivitas belajar mengajar dan olahraga luar ruangan di SDN 65 Pekanbaru.";
         overallIcon.className = "p-4 rounded-2xl bg-emerald-500/20 text-emerald-400 text-3xl";
         overallIcon.innerText = "😊";
-      } else if (mq < 600 || pm < 75) {
+      } else if (mq < 2500 || pm < 75) {
         overallCard.className = "bg-amber-950/30 p-6 rounded-3xl border border-amber-500/50 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 transition-all";
         overallText.className = "text-2xl font-black text-amber-400";
         overallText.innerText = "KUALITAS UDARA SEDANG";
-        overallDesc.innerText = "Udara cukup baik, siswa yang sensitif disarankan membatasi aktivitas fisik terlalu lama di luar kelas.";
+        overallDesc.innerText = "Udara cukup baik, siswa sensitif disarankan membatasi aktivitas fisik terlalu lama di luar kelas.";
         overallIcon.className = "p-4 rounded-2xl bg-amber-500/20 text-amber-400 text-3xl";
         overallIcon.innerText = "😐";
       } else {
         overallCard.className = "bg-rose-950/40 p-6 rounded-3xl border border-rose-500/60 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 transition-all animate-pulse-slow";
         overallText.className = "text-2xl font-black text-rose-400";
         overallText.innerText = "PERINGATAN: UDARA BAHAYA!";
-        overallDesc.innerText = "Kadar gas/debu tinggi! WAJIB MENGGUNAKAN MASKER 😷 dan kurangi kegiatan di luar ruangan sekolah!";
+        overallDesc.innerText = "Kadar gas/debu tinggi! WAJIB MENGGUNAKAN MASKER 😷 dan kurangi kegiatan di luar kelas!";
         overallIcon.className = "p-4 rounded-2xl bg-rose-500/20 text-rose-400 text-3xl";
         overallIcon.innerText = "😷";
       }
@@ -285,13 +363,20 @@
     }
 
     function updateChartLive() {
-      chart.updateSeries([
-        { name: 'Suhu (°C)', data: liveDataStore.temp },
-        { name: 'Kelembapan (%)', data: liveDataStore.hum },
-        { name: 'MQ-135 (ADC)', data: liveDataStore.mq135 },
-        { name: 'PM2.5 (µg/m³)', data: liveDataStore.pm25 }
+      chartTemp.updateSeries([{ name: 'Suhu (°C)', data: liveDataStore.temp }]);
+      chartTemp.updateOptions({ xaxis: { categories: liveDataStore.timestamps } });
+
+      chartHum.updateSeries([{ name: 'Kelembapan (%)', data: liveDataStore.hum }]);
+      chartHum.updateOptions({ xaxis: { categories: liveDataStore.timestamps } });
+
+      chartMq.updateSeries([{ name: 'MQ-135 (ADC)', data: liveDataStore.mq135 }]);
+      chartMq.updateOptions({ xaxis: { categories: liveDataStore.timestamps } });
+
+      chartPm.updateSeries([
+        { name: 'PM2.5 (µg/m³)', data: liveDataStore.pm25 },
+        { name: 'AQI Index', data: liveDataStore.aqi }
       ]);
-      chart.updateOptions({ xaxis: { categories: liveDataStore.timestamps } });
+      chartPm.updateOptions({ xaxis: { categories: liveDataStore.timestamps } });
     }
 
     function loadHistoryData(callback) {
@@ -306,14 +391,22 @@
             const hums  = cachedFeeds.map(item => parseFloat(item.field2));
             const mqs   = cachedFeeds.map(item => parseInt(item.field3));
             const pms   = cachedFeeds.map(item => parseFloat(item.field4));
+            const aqis  = cachedFeeds.map(item => item.field5 ? parseInt(item.field5) : calcAQI(parseFloat(item.field4)));
 
-            chart.updateSeries([
-              { name: 'Suhu (°C)', data: temps },
-              { name: 'Kelembapan (%)', data: hums },
-              { name: 'MQ-135 (ADC)', data: mqs },
-              { name: 'PM2.5 (µg/m³)', data: pms }
+            chartTemp.updateSeries([{ name: 'Suhu (°C)', data: temps }]);
+            chartTemp.updateOptions({ xaxis: { categories: times } });
+
+            chartHum.updateSeries([{ name: 'Kelembapan (%)', data: hums }]);
+            chartHum.updateOptions({ xaxis: { categories: times } });
+
+            chartMq.updateSeries([{ name: 'MQ-135 (ADC)', data: mqs }]);
+            chartMq.updateOptions({ xaxis: { categories: times } });
+
+            chartPm.updateSeries([
+              { name: 'PM2.5 (µg/m³)', data: pms },
+              { name: 'AQI Index', data: aqis }
             ]);
-            chart.updateOptions({ xaxis: { categories: times } });
+            chartPm.updateOptions({ xaxis: { categories: times } });
           }
         })
         .catch(err => console.error("Gagal menarik data ThingSpeak:", err));
@@ -327,7 +420,7 @@
 
       const processFilter = () => {
         const targetDayFeeds = cachedFeeds.filter(item => new Date(item.created_at).getDay() === parseInt(dayNum));
-        const hourlyBuckets = Array.from({ length: 24 }, () => ({ temp: [], hum: [], mq135: [], pm25: [] }));
+        const hourlyBuckets = Array.from({ length: 24 }, () => ({ temp: [], hum: [], mq135: [], pm25: [], aqi: [] }));
 
         targetDayFeeds.forEach(item => {
           const hour = new Date(item.created_at).getHours();
@@ -335,9 +428,11 @@
           if (item.field2) hourlyBuckets[hour].hum.push(parseFloat(item.field2));
           if (item.field3) hourlyBuckets[hour].mq135.push(parseInt(item.field3));
           if (item.field4) hourlyBuckets[hour].pm25.push(parseFloat(item.field4));
+          if (item.field5) hourlyBuckets[hour].aqi.push(parseInt(item.field5));
+          else if (item.field4) hourlyBuckets[hour].aqi.push(calcAQI(parseFloat(item.field4)));
         });
 
-        const hoursLabel = [], avgTemp = [], avgHum = [], avgMq = [], avgPm = [];
+        const hoursLabel = [], avgTemp = [], avgHum = [], avgMq = [], avgPm = [], avgAqi = [];
         const calcAvg = arr => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : null;
 
         for (let h = 0; h < 24; h++) {
@@ -346,22 +441,30 @@
           avgHum.push(calcAvg(hourlyBuckets[h].hum));
           avgMq.push(calcAvg(hourlyBuckets[h].mq135));
           avgPm.push(calcAvg(hourlyBuckets[h].pm25));
+          avgAqi.push(calcAvg(hourlyBuckets[h].aqi));
         }
 
-        chart.updateSeries([
-          { name: 'Suhu (°C)', data: avgTemp },
-          { name: 'Kelembapan (%)', data: avgHum },
-          { name: 'MQ-135 (ADC)', data: avgMq },
-          { name: 'PM2.5 (µg/m³)', data: avgPm }
+        chartTemp.updateSeries([{ name: 'Suhu (°C)', data: avgTemp }]);
+        chartTemp.updateOptions({ xaxis: { categories: hoursLabel } });
+
+        chartHum.updateSeries([{ name: 'Kelembapan (%)', data: avgHum }]);
+        chartHum.updateOptions({ xaxis: { categories: hoursLabel } });
+
+        chartMq.updateSeries([{ name: 'MQ-135 (ADC)', data: avgMq }]);
+        chartMq.updateOptions({ xaxis: { categories: hoursLabel } });
+
+        chartPm.updateSeries([
+          { name: 'PM2.5 (µg/m³)', data: avgPm },
+          { name: 'AQI Index', data: avgAqi }
         ]);
-        chart.updateOptions({ xaxis: { categories: hoursLabel } });
+        chartPm.updateOptions({ xaxis: { categories: hoursLabel } });
       };
 
       if (cachedFeeds.length === 0) loadHistoryData(processFilter);
       else processFilter();
     }
 
-    // MQTT Client Listener & Auto WiFi Warning Detector
+    // MQTT Client Listener
     const clientId = 'web_sdn65_' + Math.random().toString(16).substr(2, 8);
     const client = mqtt.connect(brokerHost, { clientId, username, password, clean: true, reconnectPeriod: 3000 });
     
@@ -390,13 +493,15 @@
         const data = JSON.parse(message.toString());
         const timeNow = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
+        const calculatedAqi = data.aqi !== undefined ? data.aqi : calcAQI(data.pm25);
+
         document.getElementById('val-temp').innerText = `${data.temp} °C`;
         document.getElementById('val-hum').innerText  = `${data.hum} %`;
         document.getElementById('val-mq').innerText   = `${data.mq135} ADC`;
         document.getElementById('val-pm').innerText   = `${data.pm25} µg/m³`;
+        document.getElementById('val-aqi').innerText  = `${calculatedAqi}`;
 
-        // Update Indikator Warna Kualitas Udara (Hijau, Kuning, Merah)
-        updateQualityIndicators(data.mq135, data.pm25);
+        updateQualityIndicators(data.mq135, data.pm25, calculatedAqi);
 
         if (liveDataStore.timestamps.length >= 20) {
           liveDataStore.timestamps.shift();
@@ -404,6 +509,7 @@
           liveDataStore.hum.shift();
           liveDataStore.mq135.shift();
           liveDataStore.pm25.shift();
+          liveDataStore.aqi.shift();
         }
 
         liveDataStore.timestamps.push(timeNow);
@@ -411,6 +517,7 @@
         liveDataStore.hum.push(data.hum);
         liveDataStore.mq135.push(data.mq135);
         liveDataStore.pm25.push(data.pm25);
+        liveDataStore.aqi.push(calculatedAqi);
 
         if (currentViewMode === 'live') updateChartLive();
       } catch (err) {
