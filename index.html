@@ -162,7 +162,7 @@
       </div>
     </div>
 
-    <!-- GRID 5 GRAFIK INDEPENDEN TERPISAH -->
+    <!-- GRID 5 GRAFIK INDEPENDEN TERPISAH (FITUR DOWNLOAD DIAKTIFKAN) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       
       <!-- Grafik 1: AQI Index -->
@@ -216,10 +216,26 @@
     let cachedFeeds = [];
     const liveDataStore = { timestamps: [], temp: [], hum: [], mq135: [], pm25: [], aqi: [] };
 
-    // Helper Opsi ApexCharts
+    // Helper Opsi ApexCharts (TOOLBAR DOWNLOAD PNG/SVG/CSV AKTIF)
     function createChartOption(color, name, yTitle, height = 240) {
       return {
-        chart: { type: 'line', height: height, toolbar: { show: false }, animations: { enabled: true } },
+        chart: { 
+          type: 'line', 
+          height: height, 
+          toolbar: { 
+            show: true, // Diaktifkan agar menu export PNG, SVG, & CSV muncul
+            tools: {
+              download: true,
+              selection: false,
+              zoom: false,
+              zoomin: false,
+              zoomout: false,
+              pan: false,
+              reset: false
+            }
+          }, 
+          animations: { enabled: true } 
+        },
         stroke: { curve: 'smooth', width: 3 },
         colors: [color],
         series: [{ name: name, data: [] }],
