@@ -58,21 +58,34 @@
       </div>
     </div>
 
-    <!-- CARDS PARAMETER UDARA (5 CARDS: AQI + SENSORS) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-      
-      <!-- AQI Index Card -->
-      <div class="bg-slate-800/80 backdrop-blur-md p-5 rounded-3xl border border-yellow-500/40 shadow-lg hover:border-yellow-500/70 transition">
-        <div class="flex justify-between items-center">
-          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Indeks AQI</p>
-          <span class="text-2xl">🍃</span>
+    <!-- SUMMARY STATUS KESEHATAN LINGKUNGAN SEKOLAH (DENGAN ANGKA AQI BESAR) -->
+    <div id="overall-status-card" class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 transition-all duration-500">
+      <div class="flex items-center space-x-5">
+        <div id="status-icon-bg" class="p-4 rounded-2xl bg-emerald-500/20 text-emerald-400 text-4xl flex items-center justify-center min-w-[70px] min-h-[70px]">
+          😊
         </div>
-        <h2 class="text-4xl font-black text-yellow-400 mt-2" id="val-aqi">--</h2>
-        <div class="mt-2 flex items-center space-x-2">
-          <span id="badge-aqi" class="px-2.5 py-0.5 text-xs font-black rounded-lg bg-slate-700 text-slate-300">--</span>
+        <div>
+          <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Status Kesehatan Udara Sekolah</p>
+          <h3 id="overall-status-text" class="text-2xl font-black text-emerald-400">MEMUAT DATA...</h3>
+          <p id="overall-status-desc" class="text-xs text-slate-300 mt-1">Menunggu respon data dari sensor sekolah SDN 65 Pekanbaru.</p>
         </div>
       </div>
+      
+      <!-- ANGKA INDEKS AQI BESAR DI DALAM BOX STATUS -->
+      <div class="flex items-center space-x-4 bg-slate-900/80 px-6 py-3 rounded-2xl border border-slate-700">
+        <div class="text-right">
+          <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Indeks AQI US-EPA</p>
+          <h2 id="overall-aqi-num" class="text-4xl font-black text-emerald-400">--</h2>
+        </div>
+        <span id="overall-aqi-badge" class="px-3 py-1 text-xs font-black rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+          BAIK
+        </span>
+      </div>
+    </div>
 
+    <!-- CARDS PARAMETER SENSOR -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
       <!-- Suhu -->
       <div class="bg-slate-800/80 backdrop-blur-md p-5 rounded-3xl border border-orange-500/30 shadow-lg hover:border-orange-500/60 transition">
         <div class="flex justify-between items-center">
@@ -90,7 +103,7 @@
           <span class="text-2xl">💧</span>
         </div>
         <h2 class="text-4xl font-black text-blue-400 mt-2" id="val-hum">-- %</h2>
-        <p class="text-xs text-slate-400 mt-2">Kelembapan Relatif</p>
+        <p class="text-xs text-slate-400 mt-2">Kelembapan Relatif Udara</p>
       </div>
 
       <!-- MQ-135 Gas -->
@@ -119,29 +132,10 @@
 
     </div>
 
-    <!-- SUMMARY STATUS KESEHATAN LINGKUNGAN SEKOLAH -->
-    <div id="overall-status-card" class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 transition-all duration-500">
-      <div class="flex items-center space-x-4">
-        <div id="status-icon-bg" class="p-4 rounded-2xl bg-emerald-500/20 text-emerald-400 text-3xl">
-          😊
-        </div>
-        <div>
-          <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Status Kesehatan Udara Sekolah</p>
-          <h3 id="overall-status-text" class="text-2xl font-black text-emerald-400">MEMUAT DATA...</h3>
-          <p id="overall-status-desc" class="text-xs text-slate-300 mt-0.5">Menunggu respon data dari sensor sekolah SDN 65 Pekanbaru.</p>
-        </div>
-      </div>
-      <div class="flex items-center space-x-2 text-xs font-bold text-slate-400">
-        <span class="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">● Hijau: Baik</span>
-        <span class="px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30">● Kuning: Sedang</span>
-        <span class="px-3 py-1.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/30">● Merah: Bahaya</span>
-      </div>
-    </div>
-
     <!-- MAIN KONTROL FILTER & JUDUL SECTION -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-800 p-5 rounded-3xl border border-slate-700 shadow-xl gap-4">
       <div>
-        <h3 class="text-lg font-bold text-slate-200">Grafik Parameter Terpisah</h3>
+        <h3 class="text-lg font-bold text-slate-200">Grafik Monitoring Udara (5 Grafik Terpisah)</h3>
         <p class="text-xs text-slate-400" id="chart-sub-title">Menampilkan Mode Live Real-time</p>
       </div>
 
@@ -168,30 +162,36 @@
       </div>
     </div>
 
-    <!-- GRID 4 GRAFIK TERPISAH -->
+    <!-- GRID 5 GRAFIK INDEPENDEN TERPISAH -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       
-      <!-- Grafik 1: Suhu -->
+      <!-- Grafik 1: AQI Index -->
+      <div class="bg-slate-800 p-5 rounded-3xl border border-yellow-500/30 shadow-xl lg:col-span-2">
+        <h4 class="text-sm font-bold text-yellow-400 mb-2">Grafik Indeks Kualitas Udara (AQI US-EPA)</h4>
+        <div id="chart-aqi" class="w-full"></div>
+      </div>
+
+      <!-- Grafik 2: Suhu -->
       <div class="bg-slate-800 p-5 rounded-3xl border border-orange-500/30 shadow-xl">
         <h4 class="text-sm font-bold text-orange-400 mb-2">Grafik Suhu Udara (°C)</h4>
         <div id="chart-temp" class="w-full"></div>
       </div>
 
-      <!-- Grafik 2: Kelembapan -->
+      <!-- Grafik 3: Kelembapan -->
       <div class="bg-slate-800 p-5 rounded-3xl border border-blue-500/30 shadow-xl">
         <h4 class="text-sm font-bold text-blue-400 mb-2">Grafik Kelembapan Udara (%)</h4>
         <div id="chart-hum" class="w-full"></div>
       </div>
 
-      <!-- Grafik 3: MQ-135 Gas -->
+      <!-- Grafik 4: MQ-135 Gas -->
       <div class="bg-slate-800 p-5 rounded-3xl border border-emerald-500/30 shadow-xl">
         <h4 class="text-sm font-bold text-emerald-400 mb-2">Grafik Kepekatan Gas MQ-135 (ADC)</h4>
         <div id="chart-mq" class="w-full"></div>
       </div>
 
-      <!-- Grafik 4: PM2.5 & AQI -->
+      <!-- Grafik 5: PM2.5 Debu -->
       <div class="bg-slate-800 p-5 rounded-3xl border border-purple-500/30 shadow-xl">
-        <h4 class="text-sm font-bold text-purple-400 mb-2">Grafik Debu PM2.5 (µg/m³) & AQI</h4>
+        <h4 class="text-sm font-bold text-purple-400 mb-2">Grafik Debu PM2.5 (µg/m³)</h4>
         <div id="chart-pm" class="w-full"></div>
       </div>
 
@@ -216,10 +216,10 @@
     let cachedFeeds = [];
     const liveDataStore = { timestamps: [], temp: [], hum: [], mq135: [], pm25: [], aqi: [] };
 
-    // Template umum opsi grafik ApexCharts
-    function createChartOption(color, name, yTitle) {
+    // Helper Opsi ApexCharts
+    function createChartOption(color, name, yTitle, height = 240) {
       return {
-        chart: { type: 'line', height: 260, toolbar: { show: false }, animations: { enabled: true } },
+        chart: { type: 'line', height: height, toolbar: { show: false }, animations: { enabled: true } },
         stroke: { curve: 'smooth', width: 3 },
         colors: [color],
         series: [{ name: name, data: [] }],
@@ -230,33 +230,19 @@
       };
     }
 
-    // Inisialisasi 4 Chart Terpisah
+    // Inisialisasi 5 Chart Independen
+    const chartAqi  = new ApexCharts(document.querySelector("#chart-aqi"),  createChartOption('#facc15', 'AQI Index', 'AQI', 260));
     const chartTemp = new ApexCharts(document.querySelector("#chart-temp"), createChartOption('#fb923c', 'Suhu (°C)', '°C'));
     const chartHum  = new ApexCharts(document.querySelector("#chart-hum"),  createChartOption('#60a5fa', 'Kelembapan (%)', '%'));
     const chartMq   = new ApexCharts(document.querySelector("#chart-mq"),   createChartOption('#10b981', 'MQ-135 (ADC)', 'ADC'));
-    
-    // Opsi khusus chart PM2.5 & AQI (Multi-series)
-    const optPm = {
-      chart: { type: 'line', height: 260, toolbar: { show: false }, animations: { enabled: true } },
-      stroke: { curve: 'smooth', width: 3 },
-      colors: ['#a855f7', '#facc15'],
-      series: [
-        { name: 'PM2.5 (µg/m³)', data: [] },
-        { name: 'AQI Index', data: [] }
-      ],
-      xaxis: { categories: [], labels: { style: { colors: '#94a3b8', fontSize: '10px' } } },
-      yaxis: { labels: { style: { colors: '#94a3b8' } } },
-      grid: { borderColor: '#334155' },
-      theme: { mode: 'dark' }
-    };
-    const chartPm = new ApexCharts(document.querySelector("#chart-pm"), optPm);
+    const chartPm   = new ApexCharts(document.querySelector("#chart-pm"),   createChartOption('#a855f7', 'PM2.5 (µg/m³)', 'µg/m³'));
 
+    chartAqi.render();
     chartTemp.render();
     chartHum.render();
     chartMq.render();
     chartPm.render();
 
-    // Fungsi Hitung AQI client-side fallback
     function calcAQI(pm25) {
       if (pm25 <= 12.0) return Math.round((50 / 12.0) * pm25);
       if (pm25 <= 35.4) return Math.round(((100 - 51) / (35.4 - 12.1)) * (pm25 - 12.1) + 51);
@@ -265,17 +251,19 @@
       return 201;
     }
 
-    // Update Status Indikator Kesehatan
     function updateQualityIndicators(mq, pm, aqi) {
       const badgeMq  = document.getElementById('badge-mq');
       const badgePm  = document.getElementById('badge-pm');
-      const badgeAqi = document.getElementById('badge-aqi');
       const overallCard = document.getElementById('overall-status-card');
       const overallText = document.getElementById('overall-status-text');
       const overallDesc = document.getElementById('overall-status-desc');
       const overallIcon = document.getElementById('status-icon-bg');
+      const overallAqiNum = document.getElementById('overall-aqi-num');
+      const overallAqiBadge = document.getElementById('overall-aqi-badge');
 
-      // MQ-135 Badge
+      overallAqiNum.innerText = aqi;
+
+      // Status MQ-135 Badge
       if (mq < 1200) {
         badgeMq.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
         badgeMq.innerText = "BAIK";
@@ -287,7 +275,7 @@
         badgeMq.innerText = "BAHAYA";
       }
 
-      // PM2.5 Badge
+      // Status PM2.5 Badge
       if (pm < 35) {
         badgePm.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
         badgePm.innerText = "BAIK";
@@ -299,40 +287,40 @@
         badgePm.innerText = "BAHAYA";
       }
 
-      // AQI Badge
+      // Total Status & Box AQI Utama
       if (aqi <= 50) {
-        badgeAqi.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-        badgeAqi.innerText = "BAIK";
-      } else if (aqi <= 100) {
-        badgeAqi.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30";
-        badgeAqi.innerText = "SEDANG";
-      } else {
-        badgeAqi.className = "px-2.5 py-0.5 text-xs font-black rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30";
-        badgeAqi.innerText = "UNHEALTHY";
-      }
-
-      // Total Status
-      if (mq < 1200 && pm < 35) {
-        overallCard.className = "bg-emerald-950/30 p-6 rounded-3xl border border-emerald-500/50 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 transition-all";
+        overallCard.className = "bg-emerald-950/30 p-6 rounded-3xl border border-emerald-500/50 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 transition-all";
         overallText.className = "text-2xl font-black text-emerald-400";
         overallText.innerText = "UDARA SEHAT & BERSIH";
         overallDesc.innerText = "Sangat aman untuk aktivitas belajar mengajar dan olahraga luar ruangan di SDN 65 Pekanbaru.";
-        overallIcon.className = "p-4 rounded-2xl bg-emerald-500/20 text-emerald-400 text-3xl";
+        overallIcon.className = "p-4 rounded-2xl bg-emerald-500/20 text-emerald-400 text-4xl flex items-center justify-center min-w-[70px] min-h-[70px]";
         overallIcon.innerText = "😊";
-      } else if (mq < 2500 || pm < 75) {
-        overallCard.className = "bg-amber-950/30 p-6 rounded-3xl border border-amber-500/50 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 transition-all";
+        
+        overallAqiNum.className = "text-4xl font-black text-emerald-400";
+        overallAqiBadge.className = "px-3 py-1 text-xs font-black rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        overallAqiBadge.innerText = "BAIK";
+      } else if (aqi <= 100) {
+        overallCard.className = "bg-amber-950/30 p-6 rounded-3xl border border-amber-500/50 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 transition-all";
         overallText.className = "text-2xl font-black text-amber-400";
         overallText.innerText = "KUALITAS UDARA SEDANG";
         overallDesc.innerText = "Udara cukup baik, siswa sensitif disarankan membatasi aktivitas fisik terlalu lama di luar kelas.";
-        overallIcon.className = "p-4 rounded-2xl bg-amber-500/20 text-amber-400 text-3xl";
+        overallIcon.className = "p-4 rounded-2xl bg-amber-500/20 text-amber-400 text-4xl flex items-center justify-center min-w-[70px] min-h-[70px]";
         overallIcon.innerText = "😐";
+
+        overallAqiNum.className = "text-4xl font-black text-amber-400";
+        overallAqiBadge.className = "px-3 py-1 text-xs font-black rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30";
+        overallAqiBadge.innerText = "SEDANG";
       } else {
-        overallCard.className = "bg-rose-950/40 p-6 rounded-3xl border border-rose-500/60 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 transition-all animate-pulse-slow";
+        overallCard.className = "bg-rose-950/40 p-6 rounded-3xl border border-rose-500/60 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 transition-all animate-pulse-slow";
         overallText.className = "text-2xl font-black text-rose-400";
         overallText.innerText = "PERINGATAN: UDARA BAHAYA!";
         overallDesc.innerText = "Kadar gas/debu tinggi! WAJIB MENGGUNAKAN MASKER 😷 dan kurangi kegiatan di luar kelas!";
-        overallIcon.className = "p-4 rounded-2xl bg-rose-500/20 text-rose-400 text-3xl";
+        overallIcon.className = "p-4 rounded-2xl bg-rose-500/20 text-rose-400 text-4xl flex items-center justify-center min-w-[70px] min-h-[70px]";
         overallIcon.innerText = "😷";
+
+        overallAqiNum.className = "text-4xl font-black text-rose-400";
+        overallAqiBadge.className = "px-3 py-1 text-xs font-black rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30";
+        overallAqiBadge.innerText = "BURUK";
       }
     }
 
@@ -363,6 +351,9 @@
     }
 
     function updateChartLive() {
+      chartAqi.updateSeries([{ name: 'AQI Index', data: liveDataStore.aqi }]);
+      chartAqi.updateOptions({ xaxis: { categories: liveDataStore.timestamps } });
+
       chartTemp.updateSeries([{ name: 'Suhu (°C)', data: liveDataStore.temp }]);
       chartTemp.updateOptions({ xaxis: { categories: liveDataStore.timestamps } });
 
@@ -372,10 +363,7 @@
       chartMq.updateSeries([{ name: 'MQ-135 (ADC)', data: liveDataStore.mq135 }]);
       chartMq.updateOptions({ xaxis: { categories: liveDataStore.timestamps } });
 
-      chartPm.updateSeries([
-        { name: 'PM2.5 (µg/m³)', data: liveDataStore.pm25 },
-        { name: 'AQI Index', data: liveDataStore.aqi }
-      ]);
+      chartPm.updateSeries([{ name: 'PM2.5 (µg/m³)', data: liveDataStore.pm25 }]);
       chartPm.updateOptions({ xaxis: { categories: liveDataStore.timestamps } });
     }
 
@@ -393,6 +381,9 @@
             const pms   = cachedFeeds.map(item => parseFloat(item.field4));
             const aqis  = cachedFeeds.map(item => item.field5 ? parseInt(item.field5) : calcAQI(parseFloat(item.field4)));
 
+            chartAqi.updateSeries([{ name: 'AQI Index', data: aqis }]);
+            chartAqi.updateOptions({ xaxis: { categories: times } });
+
             chartTemp.updateSeries([{ name: 'Suhu (°C)', data: temps }]);
             chartTemp.updateOptions({ xaxis: { categories: times } });
 
@@ -402,10 +393,7 @@
             chartMq.updateSeries([{ name: 'MQ-135 (ADC)', data: mqs }]);
             chartMq.updateOptions({ xaxis: { categories: times } });
 
-            chartPm.updateSeries([
-              { name: 'PM2.5 (µg/m³)', data: pms },
-              { name: 'AQI Index', data: aqis }
-            ]);
+            chartPm.updateSeries([{ name: 'PM2.5 (µg/m³)', data: pms }]);
             chartPm.updateOptions({ xaxis: { categories: times } });
           }
         })
@@ -444,6 +432,9 @@
           avgAqi.push(calcAvg(hourlyBuckets[h].aqi));
         }
 
+        chartAqi.updateSeries([{ name: 'AQI Index', data: avgAqi }]);
+        chartAqi.updateOptions({ xaxis: { categories: hoursLabel } });
+
         chartTemp.updateSeries([{ name: 'Suhu (°C)', data: avgTemp }]);
         chartTemp.updateOptions({ xaxis: { categories: hoursLabel } });
 
@@ -453,10 +444,7 @@
         chartMq.updateSeries([{ name: 'MQ-135 (ADC)', data: avgMq }]);
         chartMq.updateOptions({ xaxis: { categories: hoursLabel } });
 
-        chartPm.updateSeries([
-          { name: 'PM2.5 (µg/m³)', data: avgPm },
-          { name: 'AQI Index', data: avgAqi }
-        ]);
+        chartPm.updateSeries([{ name: 'PM2.5 (µg/m³)', data: avgPm }]);
         chartPm.updateOptions({ xaxis: { categories: hoursLabel } });
       };
 
@@ -492,14 +480,12 @@
       try {
         const data = JSON.parse(message.toString());
         const timeNow = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-
         const calculatedAqi = data.aqi !== undefined ? data.aqi : calcAQI(data.pm25);
 
         document.getElementById('val-temp').innerText = `${data.temp} °C`;
         document.getElementById('val-hum').innerText  = `${data.hum} %`;
         document.getElementById('val-mq').innerText   = `${data.mq135} ADC`;
         document.getElementById('val-pm').innerText   = `${data.pm25} µg/m³`;
-        document.getElementById('val-aqi').innerText  = `${calculatedAqi}`;
 
         updateQualityIndicators(data.mq135, data.pm25, calculatedAqi);
 
